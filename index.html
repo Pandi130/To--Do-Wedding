@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Playfair+Display:wght@700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#E11D48", // Rose 600
+                        "primary-dark": "#BE123C", // Rose 700
+                        "secondary": "#fb7185", // Rose 400
+                        "background-light": "#FFF1F2", // Rose 50
+                        "background-dark": "#1C1917", // Stone 900
+                        "card-light": "#FFFFFF",
+                        "card-dark": "#292524", // Stone 800
+                    },
+                    fontFamily: {
+                        "sans": ["Plus Jakarta Sans", "sans-serif"],
+                        "serif": ["Playfair Display", "serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "3xl": "2.5rem",
+                    },
+                    boxShadow: {
+                        "glass": "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
+                        "glass-dark": "0 8px 32px 0 rgba(0, 0, 0, 0.3)",
+                    }
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-300 antialiased selection:bg-primary/20 selection:text-primary;
+            }
+        }
+        
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            @apply bg-white/60 dark:bg-card-dark/60 border border-white/40 dark:border-white/5 shadow-glass dark:shadow-glass-dark;
+        }
+
+        .view-transition {
+            @apply transition-all duration-300 ease-out;
+        }
+
+        .view-enter {
+            @apply opacity-0 translate-y-4 scale-95;
+        }
+        
+        .view-enter-active {
+            @apply opacity-100 translate-y-0 scale-100;
+        }
+
+        .donut-chart {
+            background: conic-gradient(
+                #E11D48 0% 64%, 
+                transparent 64% 100%
+            );
+            border-radius: 50%;
+        }
+        
+        .ease-spring {
+            transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Hide Scrollbar but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+            /* Soft background pattern */
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(251, 113, 133, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(225, 29, 72, 0.05) 0%, transparent 20%);
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans">
+    <header
+        class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 border-b border-slate-200 dark:border-white/10">
+        <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="app.switchView('home')"
+                    class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-white hover:shadow-lg transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-xl">arrow_back_ios_new</span>
+                </button>
+                <div>
+                    <h1 class="font-serif text-2xl font-bold leading-none text-slate-800 dark:text-white transition-all transform key={currentView}"
+                        id="header-title">Overview</h1>
+                    <p class="text-primary text-xs font-bold uppercase tracking-widest mt-0.5" id="header-subtitle">
+                        Loading...</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="btn-settings"
+                    class="size-10 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-white flex items-center justify-center hover:bg-primary hover:text-white hover:shadow-lg transition-all active:scale-95 group">
+                    <span class="material-symbols-outlined group-hover:rotate-90 transition-transform">settings</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <main id="app-container" class="flex-1 max-w-6xl mx-auto w-full p-6 md:p-8 space-y-8 pb-32">
+        <!-- HOME VIEW -->
+        <div id="view-home" class="view-section space-y-8 hidden">
+            <div class="flex flex-col items-center justify-center py-20 text-center space-y-6">
+                <div
+                    class="size-24 rounded-full bg-primary/10 flex items-center justify-center text-primary animate-pulse">
+                    <span class="material-symbols-outlined text-5xl">home</span>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-serif font-bold text-slate-800 dark:text-white">Welcome Back!</h2>
+                    <p class="text-slate-500 max-w-md mx-auto mt-2">Here's a snapshot of your wedding planning progress.
+                    </p>
+                </div>
+            </div>
+            <!-- Summary Cards -->
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div onclick="app.switchView('tasks')"
+                    class="glass-panel cursor-pointer hover:scale-[1.02] transition-transform p-6 rounded-3xl group relative overflow-hidden">
+                    <div
+                        class="absolute -right-6 -top-6 size-24 rounded-full bg-blue-500/10 blur-2xl group-hover:bg-blue-500/20 transition-colors">
+                    </div>
+                    <div class="flex items-center justify-between mb-2 relative z-10">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Tasks Left</p>
+                        <div
+                            class="p-2 rounded-full bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                            <span class="material-symbols-outlined text-xl">task_alt</span>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-serif font-bold text-slate-800 dark:text-white mt-4 relative z-10"
+                        id="home-tasks-count">--</p>
+                </div>
+
+                <div onclick="app.switchView('events')"
+                    class="glass-panel cursor-pointer hover:scale-[1.02] transition-transform p-6 rounded-3xl group relative overflow-hidden">
+                    <div
+                        class="absolute -right-6 -top-6 size-24 rounded-full bg-purple-500/10 blur-2xl group-hover:bg-purple-500/20 transition-colors">
+                    </div>
+                    <div class="flex items-center justify-between mb-2 relative z-10">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Days to Go</p>
+                        <div
+                            class="p-2 rounded-full bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                            <span class="material-symbols-outlined text-xl">calendar_month</span>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-serif font-bold text-slate-800 dark:text-white mt-4 relative z-10"
+                        id="home-days-count">--</p>
+                </div>
+
+                <div onclick="app.switchView('budget')"
+                    class="glass-panel cursor-pointer hover:scale-[1.02] transition-transform p-6 rounded-3xl group relative overflow-hidden">
+                    <div
+                        class="absolute -right-6 -top-6 size-24 rounded-full bg-primary/10 blur-2xl group-hover:bg-primary/20 transition-colors">
+                    </div>
+                    <div class="flex items-center justify-between mb-2 relative z-10">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Budget Spent</p>
+                        <div
+                            class="p-2 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                            <span class="material-symbols-outlined text-xl">attach_money</span>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-serif font-bold text-slate-800 dark:text-white mt-4 relative z-10"
+                        id="home-budget-display">--</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TASKS VIEW -->
+        <div id="view-tasks" class="view-section space-y-8 hidden">
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-serif font-bold">Your Tasks</h2>
+                <div class="flex gap-2">
+                    <button onclick="app.setFilter('all')" id="filter-all"
+                        class="px-4 py-2 bg-white dark:bg-card-dark border border-slate-200 dark:border-white/10 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-500 selected-filter">All</button>
+                    <button onclick="app.setFilter('pending')" id="filter-pending"
+                        class="px-4 py-2 bg-transparent border border-transparent rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-primary transition-colors">Pending</button>
+                </div>
+            </div>
+            <div id="tasks-list" class="space-y-4">
+                <!-- Dynamic Task Items will go here -->
+                <div class="text-center py-10 text-slate-400">Loading tasks...</div>
+            </div>
+        </div>
+
+        <!-- BUDGET VIEW (Original Content) -->
+        <div id="view-budget" class="view-section space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                <div onclick="app.openEditBudgetModal()"
+                    class="glass-panel md:col-span-5 flex flex-col items-center justify-center p-8 rounded-3xl relative overflow-hidden cursor-pointer group hover:scale-[1.01] transition-transform">
+                    <div class="absolute inset-0 bg-primary/5"></div>
+                    <div class="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span class="material-symbols-outlined text-slate-400 hover:text-primary">edit</span>
+                    </div>
+                    <div class="relative w-64 h-64 flex items-center justify-center">
+                        <div class="donut-chart w-full h-full absolute"></div>
+                        <div
+                            class="absolute w-[82%] h-[82%] bg-background-light dark:bg-card-dark rounded-full flex flex-col items-center justify-center shadow-inner">
+                            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-widest">
+                                Budget</p>
+                            <p class="text-4xl font-serif font-bold tracking-tight" id="budget-total-display">$35,000
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex gap-8 mt-8">
+                        <div class="flex items-center gap-3">
+                            <span class="w-4 h-4 rounded-full bg-primary"></span>
+                            <span class="text-sm font-semibold">Spent (<span id="budget-spent-pct">64%</span>)</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="w-4 h-4 rounded-full bg-[#48232c]"></span>
+                            <span class="text-sm font-semibold">Remaining</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6 h-full">
+                    <div onclick="app.openEditTotalSpentModal()"
+                        class="glass-panel flex flex-col justify-between rounded-3xl p-8 hover:scale-[1.02] transition-transform cursor-pointer group">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <div
+                                    class="size-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary mb-4">
+                                    <span class="material-symbols-outlined text-2xl">payments</span>
+                                </div>
+                                <span
+                                    class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">edit</span>
+                            </div>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-widest">
+                                Total Spent</p>
+                        </div>
+                        <p class="text-primary text-4xl font-serif font-bold mt-4 leading-none"
+                            id="total-spent-display">$22,400</p>
+                    </div>
+                    <div onclick="app.openEditEstimatedModal()"
+                        class="glass-panel flex flex-col justify-between rounded-3xl p-8 hover:scale-[1.02] transition-transform cursor-pointer group">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <div
+                                    class="size-12 rounded-xl bg-slate-200 dark:bg-white/10 flex items-center justify-center text-slate-700 dark:text-white mb-4">
+                                    <span class="material-symbols-outlined text-2xl">monitoring</span>
+                                </div>
+                                <span
+                                    class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">edit</span>
+                            </div>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-widest">
+                                Estimated Total</p>
+                        </div>
+                        <p class="text-slate-900 dark:text-white text-4xl font-serif font-bold mt-4 leading-none"
+                            id="estimated-total-display">
+                            $34,200</p>
+                    </div>
+                    <div onclick="app.openEditSavingsModal()"
+                        class="glass-panel sm:col-span-2 flex items-center justify-between rounded-3xl p-8 cursor-pointer group hover:scale-[1.01] transition-transform">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="size-12 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
+                                <span class="material-symbols-outlined">savings</span>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase">Projected
+                                        Savings</p>
+                                    <span
+                                        class="material-symbols-outlined text-sm text-slate-300 group-hover:text-primary transition-colors">edit</span>
+                                </div>
+                                <p class="text-2xl font-serif font-bold" id="projected-savings-display">$800</p>
+                            </div>
+                        </div>
+                        <span class="px-4 py-1.5 rounded-full bg-green-500/10 text-green-500 font-bold text-xs"
+                            id="savings-status">On
+                            Track</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Trends & List -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div onclick="app.openEditTrendsModal()"
+                    class="flex flex-col p-8 rounded-2xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 ios-blur cursor-pointer group hover:scale-[1.01] transition-transform">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-serif text-xl font-bold">Monthly Trend</h3>
+                            <span
+                                class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors text-sm">edit</span>
+                        </div>
+                        <select onclick="event.stopPropagation()"
+                            class="bg-transparent border-none text-sm font-bold text-primary focus:ring-0 cursor-pointer">
+                            <option>Last 6 Months</option>
+                            <option>Year to Date</option>
+                        </select>
+                    </div>
+                    <div class="h-64 w-full py-4">
+                        <svg fill="none" height="100%" preserveAspectRatio="none" viewBox="0 0 478 150" width="100%"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path id="trend-line-path"
+                                d="M0 109C36 109 36 21 72 21C108 21 108 93 144 93C180 93 180 33 216 33C252 33 252 101 288 101C324 101 324 1 360 1C396 1 396 81 432 81C468 81 468 129 504 129"
+                                stroke="#ee2b5b" stroke-linecap="round" stroke-width="4"></path>
+                            <path id="trend-fill-path"
+                                d="M0 109C36 109 36 21 72 21C108 21 108 93 144 93C180 93 180 33 216 33C252 33 252 101 288 101C324 101 324 1 360 1C396 1 396 81 432 81C468 81 468 129 504 129 L504 150 L0 150 Z"
+                                fill="url(#lineGradient)"></path>
+                            <defs>
+                                <linearGradient id="lineGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stop-color="#ee2b5b" stop-opacity="0.3"></stop>
+                                    <stop offset="100%" stop-color="#ee2b5b" stop-opacity="0"></stop>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="flex justify-between text-xs text-slate-500 font-bold uppercase tracking-widest px-2 mt-4"
+                        id="trend-labels">
+                        <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+                    </div>
+                </div>
+                <div
+                    class="flex flex-col p-0 rounded-2xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 ios-blur overflow-hidden">
+                    <div class="flex items-center justify-between p-8 border-b border-slate-200 dark:border-white/5">
+                        <h3 class="font-serif text-xl font-bold">Recent Expenses</h3>
+                        <div class="flex items-center gap-3">
+                            <button onclick="app.openAddExpenseModal()"
+                                class="text-primary text-sm font-bold flex items-center gap-1 hover:underline uppercase">
+                                + Add Expense
+                            </button>
+                        </div>
+                    </div>
+                    <div class="divide-y divide-slate-200 dark:divide-white/5 overflow-y-auto max-h-[350px]"
+                        id="recent-expenses-list">
+                        <!-- Expenses will be dynamic -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- EVENTS VIEW -->
+        <div id="view-events" class="view-section space-y-8 hidden">
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-serif font-bold">Calendar</h2>
+                <div class="flex items-center gap-2">
+                    <button onclick="app.openAddModal()"
+                        class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center hover:bg-primary hover:text-white transition-colors mr-1">
+                        <span class="material-symbols-outlined text-lg">add</span>
+                    </button>
+                    <div class="flex gap-1 mr-2">
+                        <button onclick="app.changeMonth(-1)"
+                            class="size-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-white/10"><span
+                                class="material-symbols-outlined">chevron_left</span></button>
+                        <span class="font-bold flex items-center min-w-[100px] justify-center"
+                            id="calendar-month-display">--</span>
+                        <button onclick="app.changeMonth(1)"
+                            class="size-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-white/10"><span
+                                class="material-symbols-outlined">chevron_right</span></button>
+                    </div>
+                    <button onclick="app.openCalendarSettingsModal()"
+                        class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-lg">settings</span>
+                    </button>
+                </div>
+            </div>
+            <div class="bg-white/50 dark:bg-card-dark border border-slate-200 dark:border-white/10 rounded-2xl p-6"
+                id="calendar-container">
+                <!-- Calendar Grid Here -->
+                <div class="text-center py-20">Loading...</div>
+            </div>
+        </div>
+
+        <!-- PROFILE VIEW -->
+        <div id="view-profile" class="view-section space-y-8 hidden">
+            <div class="flex flex-col items-center py-10">
+                <div class="relative">
+                    <div class="size-32 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-4xl font-serif overflow-hidden"
+                        id="profile-avatar">
+                        <span class="material-symbols-outlined text-5xl text-slate-400">person</span>
+                    </div>
+                    <button class="absolute bottom-0 right-0 p-2 bg-primary text-white rounded-full shadow-lg"
+                        onclick="app.triggerPhotoUpload()">
+                        <span class="material-symbols-outlined text-lg">edit</span>
+                    </button>
+                    <input type="file" id="photo-input" class="hidden" accept="image/*"
+                        onchange="app.handlePhotoUpload(event)">
+                </div>
+                <div class="flex flex-col items-center">
+                    <h2 class="mt-4 text-2xl font-serif font-bold cursor-pointer hover:text-primary transition-colors"
+                        onclick="app.openEditProfileModal()" id="profile-name">Sarah & Michael</h2>
+                    <button onclick="app.openEditProfileModal()"
+                        class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold hover:text-primary">Edit
+                        Profile</button>
+                </div>
+                <p class="text-primary font-medium mt-1">October 24, 2026</p>
+            </div>
+
+            <div class="space-y-4 max-w-lg mx-auto">
+                <div
+                    class="p-6 rounded-2xl bg-white/50 dark:bg-card-dark border border-slate-200 dark:border-white/10 space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Total
+                            Budget</label>
+                        <div class="flex items-center gap-4">
+                            <span class="text-2xl font-serif font-bold" id="profile-budget-display">$100,000</span>
+                            <button onclick="app.openEditBudgetModal()"
+                                class="text-primary text-sm font-bold uppercase hover:underline">Edit</button>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-slate-200 dark:border-white/10">
+                        <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Estimated
+                            Total</label>
+                        <div class="flex items-center gap-4">
+                            <span class="text-2xl font-serif font-bold" id="profile-estimated-display">$95,000</span>
+                            <button onclick="app.openEditEstimatedModal()"
+                                class="text-primary text-sm font-bold uppercase hover:underline">Edit</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div
+                    class="p-6 rounded-2xl bg-white/50 dark:bg-card-dark border border-slate-200 dark:border-white/10 space-y-6">
+                    <h3 class="font-serif font-bold text-lg">App Settings</h3>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="size-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                                <span
+                                    class="material-symbols-outlined text-slate-600 dark:text-slate-300">dark_mode</span>
+                            </div>
+                            <span class="font-bold text-slate-700 dark:text-slate-200">Dark Mode</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="dark-mode-toggle" class="sr-only peer"
+                                onchange="app.toggleDarkMode()">
+                            <div
+                                class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="size-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-slate-600 dark:text-slate-300">edit</span>
+                            </div>
+                            <span class="font-bold text-slate-700 dark:text-slate-200">Edit Profile</span>
+                        </div>
+                        <button onclick="app.openEditProfileModal()"
+                            class="text-primary text-sm font-bold uppercase hover:underline">Edit</button>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="size-10 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-blue-500">download</span>
+                            </div>
+                            <span class="font-bold text-slate-700 dark:text-slate-200">Export Report</span>
+                        </div>
+                        <button onclick="app.generateReport()"
+                            class="text-blue-500 text-sm font-bold uppercase hover:underline">Export</button>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="size-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-red-500">delete_forever</span>
+                            </div>
+                            <span class="font-bold text-slate-700 dark:text-slate-200">Reset Data</span>
+                        </div>
+                        <button onclick="app.resetApp()"
+                            class="text-red-500 text-sm font-bold uppercase hover:underline">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+    </main>
+    <!-- Floating Dock Navigation -->
+    <!-- Floating Dock Navigation -->
+    <div
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-6 md:top-1/2 md:-translate-y-1/2 md:bottom-auto z-50">
+        <div
+            class="flex md:flex-col items-center gap-2 p-2 rounded-3xl bg-white/80 dark:bg-card-dark/80 border border-white/20 dark:border-white/10 shadow-2xl shadow-primary/10 transition-all hover:scale-[1.02]">
+
+            <button id="nav-home" onclick="app.switchView('home')"
+                class="nav-btn group relative size-12 flex items-center justify-center rounded-2xl text-slate-400 hover:text-white hover:bg-primary transition-all duration-300">
+                <span class="material-symbols-outlined text-2xl group-active:scale-90 transition-transform">home</span>
+                <!-- Tooltip for Desktop -->
+                <span
+                    class="absolute left-14 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hidden md:block whitespace-nowrap pointer-events-none">Home</span>
+            </button>
+
+            <button id="nav-tasks" onclick="app.switchView('tasks')"
+                class="nav-btn group relative size-12 flex items-center justify-center rounded-2xl text-slate-400 hover:text-white hover:bg-primary transition-all duration-300">
+                <span
+                    class="material-symbols-outlined text-2xl group-active:scale-90 transition-transform">task_alt</span>
+                <span
+                    class="absolute left-14 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hidden md:block whitespace-nowrap pointer-events-none">Tasks</span>
+            </button>
+
+            <!-- Center Action Button -->
+            <button onclick="app.openAddModal()"
+                class="group relative size-14 flex items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white shadow-lg shadow-primary/30 mx-2 md:mx-0 md:my-2 hover:-translate-y-1 md:hover:translate-y-0 md:hover:translate-x-1 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40 active:scale-95">
+                <span class="material-symbols-outlined text-3xl">add</span>
+            </button>
+
+            <button id="nav-budget" onclick="app.switchView('budget')"
+                class="nav-btn group relative size-12 flex items-center justify-center rounded-2xl text-slate-400 hover:text-white hover:bg-primary transition-all duration-300">
+                <span class="material-symbols-outlined text-2xl group-active:scale-90 transition-transform"
+                    style="font-variation-settings: 'FILL' 1">account_balance_wallet</span>
+                <span
+                    class="absolute left-14 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hidden md:block whitespace-nowrap pointer-events-none">Budget</span>
+            </button>
+
+            <button id="nav-events" onclick="app.switchView('events')"
+                class="nav-btn group relative size-12 flex items-center justify-center rounded-2xl text-slate-400 hover:text-white hover:bg-primary transition-all duration-300">
+                <span
+                    class="material-symbols-outlined text-2xl group-active:scale-90 transition-transform">calendar_month</span>
+                <span
+                    class="absolute left-14 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hidden md:block whitespace-nowrap pointer-events-none">Events</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="modal-overlay"
+        class="fixed inset-0 bg-black/50 z-[60] hidden flex items-end sm:items-center justify-center p-4">
+        <!-- Add Task Modal -->
+        <div id="modal-add-task"
+            class="bg-background-light dark:bg-card-dark w-full max-w-md rounded-3xl p-6 shadow-2xl transform transition-all scale-100 opacity-100 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-serif font-bold" id="modal-title">New Task</h3>
+                <button onclick="app.closeAddModal()"
+                    class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form onsubmit="app.handleSaveTask(event)" class="space-y-4" id="task-form">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Title</label>
+                    <input type="text" name="title" required
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors"
+                        placeholder="e.g. Book Venue">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Category</label>
+                        <select name="category"
+                            class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors">
+                            <option value="general">General</option>
+                            <option value="venue">Venue</option>
+                            <option value="attire">Attire</option>
+                            <option value="vendors">Vendors</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Priority</label>
+                        <select name="priority"
+                            class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Date</label>
+                        <input type="date" name="dueDate" required
+                            class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-slate-500">
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Time</label>
+                        <input type="time" name="time"
+                            class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-slate-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Location</label>
+                    <input type="text" name="location"
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors"
+                        placeholder="e.g. Grand Plaza Hotel">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Details</label>
+                    <textarea name="description" rows="3"
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors"
+                        placeholder="Add notes, addresses, or details..."></textarea>
+                </div>
+
+                <button type="submit" id="modal-submit-btn"
+                    class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-transform">Create
+                    Task</button>
+            </form>
+        </div>
+
+        <!-- Edit Profile Modal -->
+        <div id="modal-edit-profile"
+            class="bg-background-light dark:bg-card-dark w-full max-w-md rounded-3xl p-6 shadow-2xl transform transition-all scale-100 opacity-100 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-serif font-bold">Edit Profile</h3>
+                <button onclick="app.closeModals()"
+                    class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form id="profile-form" onsubmit="app.handleSaveProfile(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Couple
+                        Name</label>
+                    <input type="text" name="name" required
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors"
+                        placeholder="e.g. Sarah & Michael">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Wedding
+                        Date</label>
+                    <input type="date" name="date" required
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-slate-500">
+                </div>
+                <button type="submit"
+                    class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-transform">Save
+                    Changes</button>
+            </form>
+        </div>
+
+        <!-- Add Expense Modal -->
+        <div id="modal-add-expense"
+            class="bg-background-light dark:bg-card-dark w-full max-w-md rounded-3xl p-6 shadow-2xl transform transition-all scale-100 opacity-100 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-serif font-bold">New Expense</h3>
+                <button onclick="app.closeModals()"
+                    class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form onsubmit="app.handleAddExpense(event)" class="space-y-4">
+                <div>
+                    <label
+                        class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Description</label>
+                    <input type="text" name="desc" required
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors"
+                        placeholder="e.g. Wedding Cake">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Amount</label>
+                    <input type="number" name="amount" required min="0" step="0.01"
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors"
+                        placeholder="e.g. 500">
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Category</label>
+                    <select name="category"
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors">
+                        <option value="Food">Food & Drink</option>
+                        <option value="Venue">Venue</option>
+                        <option value="Attire">Attire</option>
+                        <option value="Photo">Photography</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Date</label>
+                    <input type="date" name="date" required
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-slate-500">
+                </div>
+                <button type="submit"
+                    class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-transform">Add
+                    Expense</button>
+            </form>
+        </div>
+
+        <!-- Edit Budget Modal -->
+        <div id="modal-edit-budget"
+            class="bg-background-light dark:bg-card-dark w-full max-w-md rounded-3xl p-6 shadow-2xl transform transition-all scale-100 opacity-100 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-serif font-bold">Edit Budget</h3>
+                <button onclick="app.closeModals()"
+                    class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form onsubmit="app.handleSaveBudget(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Total Budget
+                        ($)</label>
+                    <input type="number" name="totalBudget" required min="0" step="100"
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors"
+                        placeholder="e.g. 35000">
+                </div>
+                <button type="submit" id="save-budget-btn"
+                    class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-transform">Save
+                    Changes</button>
+            </form>
+        </div>
+
+        <!-- Calendar Settings Modal -->
+        <div id="modal-calendar-settings"
+            class="bg-background-light dark:bg-card-dark w-full max-w-md rounded-3xl p-6 shadow-2xl transform transition-all scale-100 opacity-100 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-serif font-bold">Calendar Settings</h3>
+                <button onclick="app.closeModals()"
+                    class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form onsubmit="app.handleSaveCalendarSettings(event)" class="space-y-4">
+                <div
+                    class="flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10">
+                    <span class="font-bold text-slate-700 dark:text-gray-200">Start week on Monday</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="startOnMonday" class="sr-only peer">
+                        <div
+                            class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Calendar Edit Option -->
+                <div onclick="app.closeModals(); setTimeout(() => app.openEditProfileModal(), 50)"
+                    class="flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10 cursor-pointer hover:bg-white dark:hover:bg-white/10 transition-colors group">
+                    <span class="font-bold text-slate-700 dark:text-gray-200">Edit Wedding Details</span>
+                    <span
+                        class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">edit</span>
+                </div>
+
+                <!-- Add Tasks Option -->
+                <div onclick="app.closeModals(); setTimeout(() => app.openAddModal(), 50)"
+                    class="flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10 cursor-pointer hover:bg-white dark:hover:bg-white/10 transition-colors group">
+                    <span class="font-bold text-slate-700 dark:text-gray-200">Add New Event</span>
+                    <span
+                        class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">add_task</span>
+                </div>
+
+                <!-- Auto Schedule Option -->
+                <div onclick="app.closeModals(); app.recalculateTimeline(true)"
+                    class="flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10 cursor-pointer hover:bg-white dark:hover:bg-white/10 transition-colors group">
+                    <span class="font-bold text-slate-700 dark:text-gray-200">Auto-Generate Timeline</span>
+                    <span
+                        class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">auto_awesome</span>
+                </div>
+
+                <!-- Monitoring Option -->
+                <div onclick="app.closeModals(); setTimeout(() => app.openEditEstimatedModal(), 50)"
+                    class="flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10 cursor-pointer hover:bg-white dark:hover:bg-white/10 transition-colors group">
+                    <span class="font-bold text-slate-700 dark:text-gray-200">Budget Monitoring</span>
+                    <span
+                        class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">monitoring</span>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-transform">Save
+                    Settings</button>
+            </form>
+        </div>
+
+        <!-- Edit Estimated Total Modal -->
+        <div id="modal-edit-estimated"
+            class="bg-background-light dark:bg-card-dark w-full max-w-md rounded-3xl p-6 shadow-2xl transform transition-all scale-100 opacity-100 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-serif font-bold">Estimated Total</h3>
+                <button onclick="app.closeModals()"
+                    class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form onsubmit="app.handleSaveEstimated(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Estimated Cost
+                        ($)</label>
+                    <input type="number" name="estimatedTotal" required min="0" step="100"
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors"
+                        placeholder="e.g. 34000">
+                </div>
+                <button type="submit"
+                    class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-transform">Save
+                    Changes</button>
+            </form>
+        </div>
+
+        <!-- Edit Total Spent Modal -->
+        <div id="modal-edit-total-spent"
+            class="bg-background-light dark:bg-card-dark w-full max-w-md rounded-3xl p-6 shadow-2xl transform transition-all scale-100 opacity-100 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-serif font-bold">Total Spent</h3>
+                <button onclick="app.closeModals()"
+                    class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 p-4 rounded-xl text-sm mb-4">
+                <p><strong>Note:</strong> Adjusting this value will add a "Balance Adjustment" expense to account for
+                    the difference.</p>
+            </div>
+            <form onsubmit="app.handleSaveTotalSpent(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Total Spent
+                        ($)</label>
+                    <input type="number" name="totalSpent" required min="0" step="0.01"
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors"
+                        placeholder="e.g. 22400">
+                </div>
+                <button type="submit"
+                    class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-transform">Save
+                    Changes</button>
+            </form>
+        </div>
+
+        <!-- Edit Savings Modal -->
+        <div id="modal-edit-savings"
+            class="bg-background-light dark:bg-card-dark w-full max-w-md rounded-3xl p-6 shadow-2xl transform transition-all scale-100 opacity-100 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-serif font-bold">Projected Savings</h3>
+                <button onclick="app.closeModals()"
+                    class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form onsubmit="app.handleSaveSavings(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Target Savings
+                        ($)</label>
+                    <input type="number" name="savings" required min="0" step="100"
+                        class="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors"
+                        placeholder="e.g. 1000">
+                </div>
+                <button type="submit"
+                    class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-transform">Save
+                    Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Trends Modal -->
+    <div id="modal-edit-trends"
+        class="bg-background-light dark:bg-card-dark w-full max-w-md rounded-3xl p-6 shadow-2xl transform transition-all scale-100 opacity-100 hidden">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-serif font-bold">Monthly Spending</h3>
+            <button onclick="app.closeModals()"
+                class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form onsubmit="app.handleSaveTrends(event)" class="space-y-4" id="trends-form">
+            <!-- Inputs generated dynamically -->
+            <button type="submit"
+                class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-transform">Update
+                Chart</button>
+        </form>
+    </div>
+    </div>
+
+    <!-- Day Tasks Modal -->
+    <div id="modal-day-tasks"
+        class="bg-background-light dark:bg-card-dark w-full max-w-md rounded-3xl p-6 shadow-2xl transform transition-all scale-100 opacity-100 hidden">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-2xl font-serif font-bold" id="day-tasks-title">October 15</h3>
+                <p class="text-sm text-slate-500 font-bold uppercase tracking-wider" id="day-tasks-subtitle">3 Tasks
+                </p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="app.openAddPrefilled()"
+                    class="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
+                    title="Add New Task">
+                    <span class="material-symbols-outlined text-lg">add</span>
+                </button>
+                <button onclick="app.closeModals()"
+                    class="size-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div id="day-tasks-list" class="space-y-3 max-h-[300px] overflow-y-auto mb-4">
+                <!-- Dynamic tasks here -->
+            </div>
+
+            <form onsubmit="app.handleQuickAddTask(event)"
+                class="flex gap-2 items-center pt-4 border-t border-slate-200 dark:border-white/10">
+                <input type="text" name="title" required placeholder="New task..."
+                    class="flex-1 bg-slate-100 dark:bg-white/5 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/50 outline-none">
+
+                <select name="category"
+                    class="w-24 bg-slate-100 dark:bg-white/5 border-none rounded-xl px-2 py-3 text-sm focus:ring-2 focus:ring-primary/50 outline-none text-slate-500 cursor-pointer">
+                    <option value="general">Gen</option>
+                    <option value="venue">Venue</option>
+                    <option value="attire">Attire</option>
+                    <option value="vendors">Vend</option>
+                </select>
+
+                <button type="submit"
+                    class="size-11 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg active:scale-95 transition-all">
+                    <span class="material-symbols-outlined text-xl">add</span>
+                </button>
+            </form>
+        </div>
+
+        <script>
+            const app = {
+                // Deprecated/Duplicate definitions removed. Active logic is further down.
+
+                updateHomeUI() {
+                    // Update Tasks Count
+                    const countEl = document.getElementById('home-tasks-count');
+                    if (countEl) countEl.innerText = this.state.tasks.filter(t => !t.completed).length;
+
+                    // Update Budget
+                    const homeBudget = document.getElementById('home-budget-display');
+                    if (homeBudget) homeBudget.innerText = '$' + this.state.budget.spent.toLocaleString();
+
+                    // Update Days to Go
+                    if (this.state.profile.date) {
+                        const today = new Date();
+                        const weddingDate = new Date(this.state.profile.date);
+                        const diffTime = weddingDate - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        const daysText = diffDays > 0 ? diffDays : 0;
+
+                        const daysEl = document.getElementById('home-days-count');
+                        if (daysEl) daysEl.innerText = daysText;
+
+                        const headerSub = document.getElementById('header-subtitle');
+                        if (headerSub) headerSub.innerText = `${daysText} days until the big day`;
+                    }
+                },
+
+                switchView(viewId) {
+                    if (this.state.currentView === viewId) return;
+
+                    // Update Dock Active State
+                    document.querySelectorAll('.nav-btn').forEach(btn => {
+                        // Reset to default
+                        btn.className = 'nav-btn group relative size-12 flex items-center justify-center rounded-2xl text-slate-400 hover:text-white hover:bg-primary transition-all duration-300';
+                        const icon = btn.querySelector('span');
+                        if (icon) {
+                            icon.style.fontVariationSettings = "'FILL' 0";
+                        }
+                    });
+
+                    const activeBtn = document.getElementById(`nav-${viewId}`);
+                    if (activeBtn) {
+                        // Active Styling
+                        activeBtn.className = 'nav-btn group relative size-12 flex items-center justify-center rounded-2xl text-white bg-primary shadow-lg shadow-primary/30 scale-110 transition-all duration-300';
+                        const icon = activeBtn.querySelector('span');
+                        if (icon) {
+                            icon.style.fontVariationSettings = "'FILL' 1";
+                        }
+                    }
+
+                    // View Transition Logic
+                    const currentViewEl = document.getElementById(`view-${this.state.currentView}`);
+                    const nextViewEl = document.getElementById(`view-${viewId}`);
+
+                    if (currentViewEl && nextViewEl) {
+                        currentViewEl.classList.add('opacity-0', 'scale-95');
+
+                        setTimeout(() => {
+                            currentViewEl.classList.add('hidden');
+                            currentViewEl.classList.remove('opacity-0', 'scale-95');
+
+                            nextViewEl.classList.remove('hidden');
+                            nextViewEl.classList.add('view-enter');
+
+                            requestAnimationFrame(() => {
+                                nextViewEl.classList.remove('view-enter');
+                                nextViewEl.classList.add('view-enter-active');
+
+                                setTimeout(() => {
+                                    nextViewEl.classList.remove('view-enter-active');
+                                }, 300);
+                            });
+                        }, 150);
+                    } else {
+                        document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+                        document.getElementById(`view-${viewId}`).classList.remove('hidden');
+                    }
+
+                    // Update Header
+                    const titles = {
+                        'home': { title: 'Overview', subtitle: 'Welcome Back' },
+                        'tasks': { title: 'My Tasks', subtitle: 'Manage To-Dos' },
+                        'budget': { title: 'Budget Tracker', subtitle: 'Expenses & Savings' },
+                        'events': { title: 'Calendar', subtitle: 'Upcoming Events' },
+                        'profile': { title: 'Settings', subtitle: 'App Preferences' }
+                    };
+
+                    const headerInfo = titles[viewId] || { title: 'Wedding Planner', subtitle: '' };
+                    document.getElementById('header-title').innerText = headerInfo.title;
+                    document.getElementById('header-subtitle').innerText = headerInfo.subtitle;
+
+                    this.state.currentView = viewId;
+                    this.save();
+                },
+
+                // --- TASKS ---
+                renderTasks() {
+                    const list = document.getElementById('tasks-list');
+                    if (!list) return;
+
+                    const filteredTasks = this.state.filter === 'all'
+                        ? this.state.tasks
+                        : this.state.tasks.filter(t => !t.completed);
+
+                    if (filteredTasks.length === 0) {
+                        list.innerHTML = '<div class="text-center py-10 text-slate-400">No tasks found.</div>';
+                        return;
+                    }
+
+                    list.innerHTML = filteredTasks.map(task => `
+                    <div class="glass-panel flex items-center gap-4 p-4 rounded-2xl group hover:scale-[1.01] transition-transform">
+                    <button onclick="app.toggleTask(${task.id})" class="size-6 rounded-full border-2 ${task.completed ? 'bg-green-500 border-green-500' : 'border-slate-300 dark:border-slate-500'} flex items-center justify-center transition-all">
+                        ${task.completed ? '<span class="material-symbols-outlined text-white text-sm">check</span>' : ''}
+                    </button>
+                    <div class="flex-1">
+                        <p class="${task.completed ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white font-bold'} transition-all">${task.title}</p>
+                        <p class="text-xs text-slate-500 uppercase tracking-wider">${task.category} • ${task.dueDate}</p>
+                    </div>
+                    <button onclick="app.editTask(${task.id})" class="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-primary transition-all pb-1">
+                         <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button onclick="app.deleteTask(${task.id})" class="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-primary transition-all pb-1">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+            `).join('');
+
+                    // Update Filter Buttons Style
+                    const btnAll = document.getElementById('filter-all');
+                    const btnPending = document.getElementById('filter-pending');
+                    const activeClass = "bg-white dark:bg-card-dark border-slate-200 dark:border-white/10 text-slate-500 selected-filter";
+                    const inactiveClass = "bg-transparent border-transparent text-slate-400 hover:text-primary";
+
+                    // Helper to reset classes - simplified approaches usually safer than removing specific long strings
+                    if (btnAll && btnPending) {
+                        if (this.state.filter === 'all') {
+                            btnAll.className = "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors " + activeClass;
+                            btnPending.className = "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors " + inactiveClass;
+                        } else {
+                            btnAll.className = "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors " + inactiveClass;
+                            btnPending.className = "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors " + activeClass;
+                        }
+                    }
+                },
+
+                setFilter(type) {
+                    this.state.filter = type;
+                    this.renderTasks();
+                },
+
+                toggleTask(id) {
+                    const task = this.state.tasks.find(t => t.id === id);
+                    if (task) {
+                        task.completed = !task.completed;
+                        this.save();
+                    }
+                },
+
+                deleteTask(id) {
+                    if (confirm('Delete this task?')) {
+                        this.state.tasks = this.state.tasks.filter(t => t.id !== id);
+                        this.save();
+
+                        // Refresh Day Modal if open
+                        const dayModal = document.getElementById('modal-day-tasks');
+                        if (dayModal && !dayModal.classList.contains('hidden') && this.selectedDate) {
+                            this.openDayTasksModal(this.selectedDate);
+                        }
+                        // Force re-render of tasks list if we are in tasks view
+                        if (this.state.currentView === 'tasks') {
+                            this.renderTasks();
+                        }
+                    }
+                },
+
+                state: {
+                    currentView: 'home',
+                    tasks: [
+                        { id: 1, title: 'Book Photographer', category: 'vendors', dueDate: '2026-10-15', completed: false },
+                        { id: 2, title: 'Send Invitations', category: 'general', dueDate: '2026-08-01', completed: true },
+                        { id: 3, title: 'Dress Fitting', category: 'attire', dueDate: '2026-09-10', completed: false },
+                        { id: 4, title: 'Meet Planner', category: 'general', dueDate: '2026-01-25', completed: false },
+                        { id: 5, title: 'Venue Tour', category: 'venue', dueDate: '2026-01-28', completed: false },
+                        { id: 6, title: 'Cake Tasting', category: 'general', dueDate: '2026-02-05', completed: false },
+                        { id: 7, title: 'Guest List Draft', category: 'general', dueDate: '2026-02-10', completed: true },
+                        { id: 8, title: 'Florist Consult', category: 'vendors', dueDate: '2026-02-15', completed: false },
+                        { id: 9, title: 'Band Audition', category: 'general', dueDate: '2026-02-22', completed: false },
+                        { id: 10, title: 'Finalize Menu', category: 'venue', dueDate: '2026-03-01', completed: false },
+                        { id: 11, title: 'Engagement Party', category: 'general', dueDate: '2026-01-30', completed: true }
+                    ],
+                    budget: {
+                        total: 100000,
+                        estimatedTotal: 95000,
+                        spent: 0,
+                        projectedSavings: 800
+                    },
+                    profile: {
+                        name: 'Sarah & Michael',
+                        date: '2026-10-24',
+                        avatar: null
+                    },
+                    trends: [1200, 1900, 1500, 2200, 1800, 2500],
+                    expenses: [
+                        { id: 1, desc: 'Venue Deposit', amount: 8000, category: 'Venue', date: '2026-02-15' }
+                    ],
+                    filter: 'all',
+                    calendarStartMonday: false
+                },
+                currentDate: new Date(), // Start at Today
+                editingTaskId: null,
+
+                init() {
+                    // Load State
+                    const saved = localStorage.getItem('weddingAppState');
+                    if (saved) {
+                        try {
+                            // Deep merge to ensure new properties like 'calendarStartMonday' are preserved if missing in saved state
+                            const parsed = JSON.parse(saved);
+                            this.state = { ...this.state, ...parsed };
+                            // Ensure estimatedTotal exists for legacy data
+                            if (typeof this.state.budget.estimatedTotal === 'undefined') {
+                                this.state.budget.estimatedTotal = this.state.budget.total;
+                            }
+                            if (typeof this.state.budget.projectedSavings === 'undefined') {
+                                this.state.budget.projectedSavings = 800;
+                            }
+                            if (!this.state.trends) {
+                                this.state.trends = [1200, 1900, 1500, 2200, 1800, 2500];
+                            }
+                        } catch (e) { console.error(e); }
+                    }
+
+                    // Check Dark Mode
+                    if (localStorage.getItem('darkMode') === 'true') {
+                        document.documentElement.classList.add('dark');
+                        const toggle = document.getElementById('dark-mode-toggle');
+                        if (toggle) toggle.checked = true;
+                    }
+
+                    this.render();
+
+                    // Ensure trends are rendered safely after a short delay to ensure DOM is ready
+                    setTimeout(() => this.renderTrends(), 0);
+
+                    // Add click outside listener for modals
+                    document.getElementById('modal-overlay').addEventListener('click', (e) => {
+                        if (e.target.id === 'modal-overlay') this.closeModals();
+                    });
+                },
+
+                save() {
+                    localStorage.setItem('weddingAppState', JSON.stringify(this.state));
+                    this.render();
+                },
+
+                render() {
+                    this.updateHomeUI();
+                    this.renderTasks();
+                    this.updateBudgetUI(); // Renamed from renderBudget to match original
+                    this.renderCalendar();
+                    this.renderProfile();
+                    this.renderExpenses();
+                    this.renderTrends();
+
+                    // Update Header Dynamic Title
+                    this.switchView(this.state.currentView);
+                },
+
+                editTask(id) {
+                    const task = this.state.tasks.find(t => t.id === id);
+                    if (!task) return;
+
+                    this.editingTaskId = id;
+                    document.getElementById('modal-title').innerText = this.state.currentView === 'events' ? 'Edit Event' : 'Edit Task';
+                    document.getElementById('modal-submit-btn').innerText = 'Save Changes';
+
+                    const form = document.getElementById('task-form');
+
+                    // Helper to safely set values using querySelector
+                    const setVal = (name, val) => {
+                        const el = form.querySelector(`[name="${name}"]`);
+                        if (el) el.value = val || '';
+                    };
+
+                    setVal('title', task.title);
+                    setVal('category', task.category);
+                    setVal('dueDate', task.dueDate);
+                    setVal('time', task.time);
+                    setVal('location', task.location);
+                    setVal('description', task.description);
+                    setVal('priority', task.priority || 'medium');
+
+                    this.openAddModal(true); // Explicitly tell it to keep the form data we just set
+                },
+
+                handleSaveTask(e) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+
+                    if (this.editingTaskId) {
+                        // Update existing
+                        const task = this.state.tasks.find(t => t.id === this.editingTaskId);
+                        if (task) {
+                            task.title = formData.get('title');
+                            task.category = formData.get('category');
+                            task.dueDate = formData.get('dueDate');
+                            task.time = formData.get('time');
+                            task.location = formData.get('location');
+                            task.description = formData.get('description');
+                            task.priority = formData.get('priority');
+                        }
+                    } else {
+                        // Create new
+                        const newTask = {
+                            id: Date.now(),
+                            title: formData.get('title'),
+                            category: formData.get('category'),
+                            dueDate: formData.get('dueDate'),
+                            time: formData.get('time'),
+                            location: formData.get('location'),
+                            description: formData.get('description'),
+                            priority: formData.get('priority') || 'medium',
+                            completed: false
+                        };
+                        this.state.tasks.unshift(newTask);
+                    }
+
+
+                    this.editingTaskId = null; // Reset edit state
+                    this.save();
+                    this.closeModals();
+                    if (this.state.currentView === 'home' || this.state.currentView === 'tasks') {
+                        this.renderTasks(); // Force re-render if we don't switch views
+                    } else if (this.state.currentView === 'events') {
+                        this.renderCalendar();
+                        // Open the modal for the date we just saved to show the result
+                        const savedDate = formData.get('dueDate');
+                        if (savedDate) {
+                            this.openDayTasksModal(savedDate);
+                        } else if (this.selectedDate) {
+                            this.openDayTasksModal(this.selectedDate);
+                        }
+                    } else {
+                        this.switchView('tasks');
+                    }
+                    e.target.reset();
+                    this.editingTaskId = null;
+                },
+
+                // --- BUDGET ---
+                updateBudgetUI() {
+                    const totalEl = document.getElementById('budget-total-display');
+                    if (totalEl) totalEl.innerText = '$' + this.state.budget.total.toLocaleString();
+
+                    // Calculate actual spent from expenses
+                    const totalSpent = this.state.expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
+                    this.state.budget.spent = totalSpent;
+
+                    const spentEl = document.getElementById('total-spent-display');
+                    if (spentEl) spentEl.innerText = '$' + totalSpent.toLocaleString();
+
+                    const pct = this.state.budget.total > 0 ? Math.round((totalSpent / this.state.budget.total) * 100) : 0;
+                    const pctEl = document.getElementById('budget-spent-pct');
+                    if (pctEl) pctEl.innerText = pct + '%';
+
+                    const estEl = document.getElementById('estimated-total-display');
+                    if (estEl && this.state.budget.estimatedTotal !== undefined) {
+                        estEl.innerText = '$' + this.state.budget.estimatedTotal.toLocaleString();
+                    }
+
+                    const savEl = document.getElementById('projected-savings-display');
+                    if (savEl) {
+                        // Logic: You can either display manual savings, or calculated (Budget - Estimated)
+                        // Request implies manual input, so we use state.projectedSavings
+                        savEl.innerText = '$' + (this.state.budget.projectedSavings || 0).toLocaleString();
+                    }
+                },
+
+                openAddExpenseModal() {
+                    // Reset if not editing
+                    if (!this.editingExpenseId) {
+                        const modal = document.getElementById('modal-add-expense');
+                        modal.querySelector('h3').innerText = 'New Expense';
+                        modal.querySelector('button[type="submit"]').innerText = 'Add Expense';
+                        modal.querySelector('form').reset();
+                        // Default date
+                        modal.querySelector('input[name="date"]').value = new Date().toISOString().split('T')[0];
+                    }
+
+                    document.getElementById('modal-overlay').classList.remove('hidden');
+                    document.getElementById('modal-add-expense').classList.remove('hidden');
+                    document.getElementById('modal-add-task').classList.add('hidden');
+                    document.getElementById('modal-day-tasks').classList.add('hidden');
+                    document.getElementById('modal-edit-profile').classList.add('hidden');
+                },
+
+                handleAddExpense(e) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+
+                    if (this.editingExpenseId) {
+                        const expense = this.state.expenses.find(exp => exp.id === this.editingExpenseId);
+                        if (expense) {
+                            expense.desc = formData.get('desc');
+                            expense.amount = parseFloat(formData.get('amount'));
+                            expense.category = formData.get('category');
+                            expense.date = formData.get('date');
+                        }
+                        this.editingExpenseId = null;
+                    } else {
+                        const expense = {
+                            id: Date.now(),
+                            desc: formData.get('desc'),
+                            amount: parseFloat(formData.get('amount')),
+                            category: formData.get('category'),
+                            date: formData.get('date')
+                        };
+                        this.state.expenses.unshift(expense);
+                    }
+
+                    this.save();
+                    this.closeModals();
+                    this.renderExpenses(); // Re-render the list
+                    this.updateBudgetUI(); // Ensure totals are updated
+                    e.target.reset();
+                },
+
+                renderExpenses() {
+                    const list = document.getElementById('recent-expenses-list');
+                    if (!list) return;
+
+                    if (this.state.expenses.length === 0) {
+                        list.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">No expenses yet.</div>';
+                        return;
+                    }
+
+                    list.innerHTML = this.state.expenses.map(exp => `
+                     <div class="flex items-center justify-between p-6 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-default group">
+                        <div class="flex items-center gap-5">
+                            <div class="size-14 rounded-2xl bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-2xl">attach_money</span>
+                            </div>
+                            <div>
+                                <p class="text-slate-900 dark:text-white font-bold text-lg">${exp.desc}</p>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-500 font-bold uppercase">${exp.category}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-right">
+                                <p class="text-slate-900 dark:text-white font-serif font-bold text-lg">$${exp.amount.toLocaleString()}</p>
+                                <p class="text-xs text-slate-500 mt-1 uppercase font-bold tracking-tighter">${new Date(exp.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</p>
+                            </div>
+                            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="app.editExpense(${exp.id})" class="p-2 text-slate-400 hover:text-primary transition-colors" title="Edit">
+                                    <span class="material-symbols-outlined text-lg">edit</span>
+                                </button>
+                                <button onclick="app.deleteExpense(${exp.id})" class="p-2 text-slate-400 hover:text-red-500 transition-colors" title="Delete">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                },
+
+                editExpense(id) {
+                    const expense = this.state.expenses.find(e => e.id === id);
+                    if (!expense) return;
+
+                    this.editingExpenseId = id;
+                    const modal = document.getElementById('modal-add-expense');
+
+                    // Update Modal UI for Edit Mode
+                    modal.querySelector('h3').innerText = 'Edit Expense';
+                    modal.querySelector('button[type="submit"]').innerText = 'Save Changes';
+
+                    const form = modal.querySelector('form');
+                    form.desc.value = expense.desc;
+                    form.amount.value = expense.amount;
+                    form.category.value = expense.category;
+                    form.date.value = expense.date;
+
+                    this.openAddExpenseModal();
+                },
+
+                deleteExpense(id) {
+                    if (confirm('Delete this expense?')) {
+                        this.state.expenses = this.state.expenses.filter(e => e.id !== id);
+                        this.save();
+                        this.renderExpenses();
+                        this.updateBudgetUI();
+                    }
+                },
+
+                // Calendar methods moved to calendar.js
+
+                // --- PROFILE ---
+                renderProfile() {
+                    const nameEl = document.getElementById('profile-name');
+                    if (nameEl) nameEl.innerText = this.state.profile.name || 'Set Name';
+
+                    const dateEl = document.querySelector('#view-profile .text-primary.font-medium');
+                    if (dateEl) dateEl.innerText = this.state.profile.date ? new Date(this.state.profile.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Set Date';
+
+                    // Update Profile Budget Display
+                    const budgetEl = document.getElementById('profile-budget-display');
+                    if (budgetEl) budgetEl.innerText = `$${this.state.budget.total.toLocaleString()}`;
+
+                    const estimatedEl = document.getElementById('profile-estimated-display');
+                    if (estimatedEl) estimatedEl.innerText = `$${this.state.budget.estimatedTotal.toLocaleString()}`;
+
+                    const avatarEl = document.getElementById('profile-avatar');
+                    if (this.state.profile.avatar) {
+                        avatarEl.innerHTML = `<img src="${this.state.profile.avatar}" class="w-full h-full object-cover">`;
+                    } else {
+                        avatarEl.innerHTML = '<span class="material-symbols-outlined text-5xl text-slate-400">person</span>';
+                    }
+                },
+
+                triggerPhotoUpload() {
+                    document.getElementById('photo-input').click();
+                },
+
+                handlePhotoUpload(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        this.state.profile.avatar = event.target.result;
+                        this.save();
+                    };
+                    reader.readAsDataURL(file);
+                },
+
+                editProfile() {
+                    this.openEditProfileModal();
+                },
+
+                editProfile() {
+                    this.openEditProfileModal();
+                },
+
+                // Timeline methods moved to calendar.js
+
+                handleSaveProfile(e) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const oldDate = this.state.profile.date;
+                    const newDate = formData.get('date');
+
+                    this.state.profile.name = formData.get('name');
+                    this.state.profile.date = newDate;
+
+                    this.save();
+                    this.closeModals();
+                    // this.render(); // save handles this
+
+                    if (oldDate !== newDate && newDate) {
+                        if (confirm('Wedding date updated! Would you like to auto-adjust your task timeline based on this new date?')) {
+                            this.recalculateTimeline(false);
+                        }
+                    }
+                },
+
+                openEditBudgetModal() {
+                    const modal = document.getElementById('modal-edit-budget');
+                    const input = modal.querySelector('input[name="totalBudget"]');
+                    if (input) input.value = this.state.budget.total;
+
+                    document.getElementById('modal-overlay').classList.remove('hidden');
+                    modal.classList.remove('hidden');
+                },
+
+                handleSaveBudget(e) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const newTotal = parseFloat(formData.get('totalBudget'));
+                    if (!isNaN(newTotal) && newTotal >= 0) {
+                        this.state.budget.total = newTotal;
+                        // Recalculate remaining? - Budget view handles this based on state
+                        this.save();
+                        this.closeModals();
+                    }
+                },
+
+                openEditTrendsModal() {
+                    const modal = document.getElementById('modal-edit-trends');
+                    const form = document.getElementById('trends-form');
+                    if (!form) return;
+
+                    let inputsContainer = form.querySelector('.generated-inputs');
+                    if (!inputsContainer) {
+                        inputsContainer = document.createElement('div');
+                        inputsContainer.className = 'generated-inputs space-y-3';
+                        // Insert before the LAST button (Submit)
+                        const btn = form.querySelector('button[type="submit"]');
+                        if (btn) {
+                            form.insertBefore(inputsContainer, btn);
+                        } else {
+                            form.appendChild(inputsContainer);
+                        }
+                    }
+
+                    inputsContainer.innerHTML = ''; // Clear previous
+
+                    // Generate last 6 month names
+                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    const today = new Date();
+
+                    // Safely get trends
+                    const currentTrends = Array.isArray(this.state.trends) && this.state.trends.length === 6
+                        ? this.state.trends
+                        : [1200, 1900, 1500, 2200, 1800, 2500];
+
+                    for (let i = 5; i >= 0; i--) {
+                        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                        const label = monthNames[d.getMonth()];
+                        const val = currentTrends[5 - i] || 0;
+
+                        inputsContainer.innerHTML += `
+                        <div class="flex items-center gap-4">
+                            ${inputsContainer.children.length === 0 ? '<p class="w-full text-xs text-slate-400 mb-2 col-span-2">Oldest &rarr; Newest</p>' : ''}
+                            <label class="w-12 text-sm font-bold uppercase text-slate-500">${label}</label>
+                            <input type="number" name="trend_${5 - i}" value="${val}" required min="0" step="1"
+                                class="flex-1 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 outline-none focus:border-primary transition-colors">
+                        </div>
+                     `;
+                    }
+
+                    document.getElementById('modal-overlay').classList.remove('hidden');
+                    modal.classList.remove('hidden');
+                },
+
+                handleSaveTrends(e) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const newTrends = [];
+                    for (let i = 0; i < 6; i++) {
+                        const val = parseFloat(formData.get(`trend_${i}`));
+                        newTrends.push(isNaN(val) ? 0 : val);
+                    }
+                    this.state.trends = newTrends;
+                    this.save();
+                    this.closeModals();
+                    this.renderTrends();
+                },
+
+                renderTrends() {
+                    // Generate Dynamic Labels
+                    const labelsCont = document.getElementById('trend-labels');
+                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    const today = new Date();
+                    let htmlLabels = '';
+                    for (let i = 5; i >= 0; i--) {
+                        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                        htmlLabels += `<span>${monthNames[d.getMonth()]}</span>`;
+                    }
+                    if (labelsCont) labelsCont.innerHTML = htmlLabels;
+
+                    // Render Chart Path
+                    const data = this.state.trends;
+                    const max = Math.max(...data, 100); // Ensure at least 100 range
+                    const height = 150;
+                    const width = 478; // viewBox width from SVG
+                    const step = width / (data.length - 1); // 5 segments
+
+                    // Generates points (x,y)
+                    // Y is inverted: y = height - (value / max * height * 0.8)  (keep some padding)
+                    const points = data.map((val, idx) => {
+                        const x = idx * step;
+                        const y = height - (val / max * (height - 30)) - 10; // 30px padding bottom/top
+                        return [x, y];
+                    });
+
+                    // Simple Line Path (or simple curve)
+                    // Let's do a Catmull-Rom like smooth path or just simple bezier
+                    // For simplicity and style, simple Linear or generic polyline is safest, 
+                    // but let's try a simple smoothing function for the "trend" look.
+
+                    let d = `M${points[0][0]} ${points[0][1]}`;
+
+                    // Simple quadratic bezier for smoothing between points
+                    for (let i = 1; i < points.length; i++) {
+                        // Midpoint strategy for smooth curves
+                        // Or just L for straight lines if curve math is too complex for this context
+                        // Let's use straight lines for robustness as requested "edit option" not "make beautiful curve"
+                        // Actually original was curved. Let's do a simple C curve.
+                        const prev = points[i - 1];
+                        const curr = points[i];
+                        const cp1x = prev[0] + (curr[0] - prev[0]) / 2;
+                        const cp1y = prev[1];
+                        const cp2x = prev[0] + (curr[0] - prev[0]) / 2;
+                        const cp2y = curr[1];
+
+                        d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${curr[0]} ${curr[1]}`;
+                    }
+
+                    const linePath = document.getElementById('trend-line-path');
+                    const fillPath = document.getElementById('trend-fill-path');
+
+                    if (linePath) linePath.setAttribute('d', d);
+                    if (fillPath) {
+                        fillPath.setAttribute('d', `${d} L ${width} ${height} L 0 ${height} Z`);
+                    }
+                },
+
+                openEditProfileModal() {
+                    const modal = document.getElementById('modal-edit-profile');
+                    const form = document.getElementById('profile-form');
+                    form.name.value = this.state.profile.name;
+                    form.date.value = this.state.profile.date;
+
+                    document.getElementById('modal-overlay').classList.remove('hidden');
+                    modal.classList.remove('hidden');
+                },
+
+                openEditEstimatedModal() {
+                    const modal = document.getElementById('modal-edit-estimated');
+                    const input = modal.querySelector('input[name="estimatedTotal"]');
+                    if (input) input.value = this.state.budget.estimatedTotal;
+
+                    document.getElementById('modal-overlay').classList.remove('hidden');
+                    modal.classList.remove('hidden');
+                },
+
+                handleSaveEstimated(e) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const newTotal = parseFloat(formData.get('estimatedTotal'));
+                    if (!isNaN(newTotal) && newTotal >= 0) {
+                        this.state.budget.estimatedTotal = newTotal;
+                        this.save();
+                        this.closeModals();
+                        this.updateBudgetUI();
+                        this.renderProfile(); // Update everywhere
+                    }
+                },
+
+                openEditSavingsModal() {
+                    const modal = document.getElementById('modal-edit-savings');
+                    const input = modal.querySelector('input[name="savings"]');
+                    if (input) input.value = this.state.budget.projectedSavings || 0;
+
+                    document.getElementById('modal-overlay').classList.remove('hidden');
+                    modal.classList.remove('hidden');
+                },
+
+                handleSaveSavings(e) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const newSavings = parseFloat(formData.get('savings'));
+                    if (!isNaN(newSavings) && newSavings >= 0) {
+                        this.state.budget.projectedSavings = newSavings;
+                        this.save();
+                        this.closeModals();
+                        this.updateBudgetUI();
+                    }
+                },
+
+                openEditTotalSpentModal() {
+                    const modal = document.getElementById('modal-edit-total-spent');
+                    const input = modal.querySelector('input[name="totalSpent"]');
+                    // Calculate current total spent
+                    const totalSpent = this.state.expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
+                    if (input) input.value = totalSpent;
+
+                    document.getElementById('modal-overlay').classList.remove('hidden');
+                    modal.classList.remove('hidden');
+                },
+
+                handleSaveTotalSpent(e) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const newTotal = parseFloat(formData.get('totalSpent'));
+
+                    if (!isNaN(newTotal) && newTotal >= 0) {
+                        const currentTotal = this.state.expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
+                        const adjustment = newTotal - currentTotal;
+
+                        // Only add adjustment if significantly different (avoid floating point noise)
+                        if (Math.abs(adjustment) > 0.01) {
+                            const expense = {
+                                id: Date.now(),
+                                desc: 'Balance Adjustment',
+                                amount: adjustment,
+                                category: 'Other',
+                                date: new Date().toISOString().split('T')[0] // today's date YYYY-MM-DD
+                            };
+                            this.state.expenses.unshift(expense);
+                            this.save();
+                        }
+
+                        this.closeModals();
+                        this.renderExpenses();
+                        this.updateBudgetUI();
+                    }
+                },
+
+                exportData() {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.state, null, 2));
+                    const downloadAnchorNode = document.createElement('a');
+                    downloadAnchorNode.setAttribute("href", dataStr);
+                    downloadAnchorNode.setAttribute("download", "wedding_planner_backup.json");
+                    document.body.appendChild(downloadAnchorNode);
+                    downloadAnchorNode.click();
+                    downloadAnchorNode.remove();
+                },
+
+                generateReport() {
+                    let report = `WEDDING PLANNER REPORT\n`;
+                    report += `Generated on: ${new Date().toLocaleDateString()}\n`;
+                    report += `Couple: ${this.state.profile.name}\n`;
+                    report += `Wedding Date: ${this.state.profile.date}\n\n`;
+
+                    report += `----------------------------\n`;
+                    report += `BUDGET OVERVIEW\n`;
+                    report += `----------------------------\n`;
+                    report += `Total Budget: $${this.state.budget.total.toLocaleString()}\n`;
+                    report += `Total Spent:  $${this.state.budget.spent.toLocaleString()}\n`;
+                    report += `Remaining:    $${(this.state.budget.total - this.state.budget.spent).toLocaleString()}\n`;
+                    report += `Pending Cost: $${this.state.budget.estimatedTotal.toLocaleString()} (Estimated)\n\n`;
+
+                    report += `----------------------------\n`;
+                    report += `TASK STATUS\n`;
+                    report += `----------------------------\n`;
+                    const totalTasks = this.state.tasks.length;
+                    const completedTasks = this.state.tasks.filter(t => t.completed).length;
+                    report += `Progress: ${completedTasks}/${totalTasks} Tasks Completed (${totalTasks > 0 ? Math.round(completedTasks / totalTasks * 100) : 0}%)\n\n`;
+
+                    report += `PENDING TASKS:\n`;
+                    const pending = this.state.tasks.filter(t => !t.completed).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+                    if (pending.length === 0) report += `(All caught up!)\n`;
+                    else {
+                        pending.forEach(t => {
+                            report += `[ ] ${t.dueDate} | ${t.title} (${t.category})\n`;
+                        });
+                    }
+                    report += `\n`;
+
+                    report += `----------------------------\n`;
+                    report += `EXPENSE HISTORY\n`;
+                    report += `----------------------------\n`;
+                    if (this.state.expenses.length === 0) report += `(No expenses recorded)\n`;
+                    else {
+                        this.state.expenses.forEach(e => {
+                            report += `${e.date} | $${e.amount.toLocaleString()} | ${e.desc} (${e.category})\n`;
+                        });
+                    }
+
+                    const blob = new Blob([report], { type: 'text/plain' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Wedding_Report_${new Date().toISOString().split('T')[0]}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                },
+
+                toggleDarkMode() {
+                    const isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('darkMode', isDark);
+                },
+
+                resetApp() {
+                    if (confirm("Are you sure you want to delete all data? This cannot be undone.")) {
+                        localStorage.removeItem('weddingAppState');
+                        localStorage.removeItem('darkMode');
+                        location.reload();
+                    }
+                },
+
+                openAddModal(keepForm = false) {
+                    // Only reset if we are NOT keeping the form data (e.g., creating new)
+                    if (!keepForm) {
+                        this.editingTaskId = null; // Ensure we are in create mode if resetting
+                        document.getElementById('modal-title').innerText = this.state.currentView === 'events' ? 'New Event' : 'New Task';
+                        document.getElementById('modal-submit-btn').innerText = this.state.currentView === 'events' ? 'Create Event' : 'Create Task';
+                        document.getElementById('task-form').reset();
+
+                        // Prefill date if in events view
+                        if (this.state.currentView === 'events') {
+                            const dateInput = document.querySelector('#modal-add-task input[name="dueDate"]');
+                            if (dateInput) {
+                                // Use selected date if available, otherwise Today
+                                dateInput.value = this.selectedDate || new Date().toISOString().split('T')[0];
+                            }
+                        }
+                    }
+
+                    document.getElementById('modal-overlay').classList.remove('hidden');
+                    document.getElementById('modal-add-task').classList.remove('hidden');
+                    document.getElementById('modal-day-tasks').classList.add('hidden');
+                },
+
+                closeModals() {
+                    document.getElementById('modal-overlay').classList.add('hidden');
+                    document.getElementById('modal-add-task').classList.add('hidden');
+                    document.getElementById('modal-day-tasks').classList.add('hidden');
+                    document.getElementById('modal-edit-profile').classList.add('hidden');
+                    document.getElementById('modal-add-expense').classList.add('hidden');
+                    document.getElementById('modal-edit-budget').classList.add('hidden');
+                    document.getElementById('modal-calendar-settings').classList.add('hidden');
+                    document.getElementById('modal-edit-estimated').classList.add('hidden');
+                    document.getElementById('modal-edit-total-spent').classList.add('hidden');
+                    document.getElementById('modal-edit-savings').classList.add('hidden');
+                    document.getElementById('modal-edit-trends').classList.add('hidden');
+                },
+
+                // openDayTasksModal moved to calendar.js
+
+                openAddPrefilled() {
+                    this.editingTaskId = null; // Ensure we are in "New Task" mode
+                    this.openAddModal();
+                    if (this.selectedDate) {
+                        // Slight delay to ensure modal is rendered
+                        setTimeout(() => {
+                            const dateInput = document.querySelector('#modal-add-task input[name="dueDate"]');
+                            if (dateInput) dateInput.value = this.selectedDate;
+                        }, 0);
+                    }
+                },
+
+                handleQuickAddTask(e) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const title = formData.get('title');
+
+                    if (!title || !this.selectedDate) return;
+
+                    const newTask = {
+                        id: Date.now(),
+                        title: title,
+                        category: formData.get('category') || 'general',
+                        dueDate: this.selectedDate,
+                        completed: false
+                    };
+
+                    this.state.tasks.unshift(newTask);
+                    this.save(); // Triggers render() which updates calendar dots
+
+                    // Refresh the modal list immediately
+                    this.openDayTasksModal(this.selectedDate);
+                    e.target.reset();
+                },
+
+                closeAddModal() {
+                    // If we are in 'events' view and were editing a task (or just viewing a day context),
+                    // we want to return to the Day View Modal instead of closing everything.
+                    // We check 'editingTaskId' to see if we were in a sub-flow of the day view.
+                    const shouldReturnToDay = this.state.currentView === 'events' && this.selectedDate && this.editingTaskId;
+
+                    this.closeModals();
+                    this.editingTaskId = null; // Ensure clean state
+
+                    if (shouldReturnToDay) {
+                        this.openDayTasksModal(this.selectedDate);
+                    }
+                }
+            };
+
+            // Initialize
+            // app.init(); // Init called after calendar.js loads
+
+            // Header Logic Wiring
+            const backBtn = document.querySelector('header button span.arrow_back_ios_new');
+            if (backBtn) backBtn.parentElement.onclick = () => app.switchView('home');
+
+            const settingsBtn = document.getElementById('btn-settings');
+            if (settingsBtn) settingsBtn.onclick = () => app.switchView('profile');
+
+            const exportBtn = document.querySelector('header button span.file_download');
+            if (exportBtn) exportBtn.parentElement.onclick = () => app.exportData();
+
+            // Calendar Navigation
+            const calPrev = document.querySelector('#view-events button:first-of-type');
+            if (calPrev) calPrev.onclick = () => app.changeMonth(-1);
+            const calNext = document.querySelector('#view-events button:last-of-type');
+            if (calNext) calNext.onclick = () => app.changeMonth(1);
+
+            // Profile Edit
+            // Profile Edit
+            // if (profileEditBtn) profileEditBtn.onclick = () => app.editProfile();
+            const budgetEditBtn = document.querySelector('#view-profile button.text-primary.uppercase');
+            if (budgetEditBtn) budgetEditBtn.onclick = () => {
+                const newBudget = prompt("Enter Total Budget:", app.state.budget.total);
+                if (newBudget && !isNaN(newBudget)) {
+                    app.state.budget.total = parseInt(newBudget);
+                    app.save();
+                }
+            }
+
+            window.app = app; // Ensure accessibility for inline handlers
+        </script>
+        <script src="calendar.js"></script>
+        <script>
+            // Ensure app is available to calendar.js by checking window.app if local app is not found scope-wise
+            // Re-run init
+            if (window.app) window.app.init();
+        </script>
+</body>
+
+</html>
